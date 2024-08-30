@@ -464,6 +464,8 @@
   //  (Object) An object representing the deserialized params string.
   
   $.deparam = jq_deparam = function( params, coerce ) {
+    var prohibitedKeys = ['__proto__'];
+    
     var obj = Object.create(null),
       coerce_types = { 'true': !0, 'false': !1, 'null': null };
     
@@ -479,6 +481,10 @@
         // into its component parts.
         keys = key.split( '][' ),
         keys_last = keys.length - 1;
+
+      if (prohibitedKeys.includes(key)) {
+        return;
+      }
       
       // If the first keys part contains [ and the last ends with ], then []
       // are correctly balanced.
@@ -520,6 +526,11 @@
           // * Rinse & repeat.
           for ( ; i <= keys_last; i++ ) {
             key = keys[i] === '' ? cur.length : keys[i];
+            
+            if (prohibitedKeys.includes(key)) {
+              return;
+            }
+
             cur = cur[key] = i < keys_last
               ? cur[key] || ( keys[i+1] && isNaN( keys[i+1] ) ? Object.create(null) : [] )
               : val;
