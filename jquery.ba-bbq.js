@@ -7,6 +7,13 @@
  * http://benalman.com/about/license/
  */
 
+/* 
+ * Additional changes to this file:
+ * - Fixed prototype pollution (CVE-2021-20086)
+ * - Minified with `uglifyjs jquery.ba-bbq.js --compress -o jquery.ba-bbq.min.js`
+ * http://benalman.com/about/license/
+ */
+
 // Script: jQuery BBQ: Back Button & Query Library
 //
 // *Version: 1.3pre, Last updated: 8/26/2010*
@@ -465,6 +472,7 @@
   
   $.deparam = jq_deparam = function( params, coerce ) {
     var obj = {},
+      prohibitedKeys = ['__proto__'],
       coerce_types = { 'true': !0, 'false': !1, 'null': null };
     
     // Iterate over all name=value pairs.
@@ -479,6 +487,10 @@
         // into its component parts.
         keys = key.split( '][' ),
         keys_last = keys.length - 1;
+
+      if (prohibitedKeys.includes(key)) {
+        return;
+      }
       
       // If the first keys part contains [ and the last ends with ], then []
       // are correctly balanced.
@@ -520,6 +532,11 @@
           // * Rinse & repeat.
           for ( ; i <= keys_last; i++ ) {
             key = keys[i] === '' ? cur.length : keys[i];
+
+            if (prohibitedKeys.includes(key)) {
+              return;
+            }
+
             cur = cur[key] = i < keys_last
               ? cur[key] || ( keys[i+1] && isNaN( keys[i+1] ) ? {} : [] )
               : val;
